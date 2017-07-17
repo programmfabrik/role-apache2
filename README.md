@@ -11,6 +11,9 @@ Example play
 - hosts: dm.public-debian.vagrant
   vars:
     apache2_enabled: yes
+    apache2_enable_modules:
+      - rewrite
+      - ssl
   roles:
     - blunix.role-apache2
 ```
