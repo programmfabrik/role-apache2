@@ -1,0 +1,6 @@
+---
+- include: apache2.yml
+  when: apache2_enabled
+  tags:
+    - apache2
+    - webserver
