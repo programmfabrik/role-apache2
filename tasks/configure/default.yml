@@ -9,3 +9,11 @@
   loop_control:
     loop_var: apache2_default_vhost
   notify: restart apache2
+
+- name: template the default vhosts index page
+  template:
+    src: "var/www/html/index.html"
+    dest: "/var/www/html/index.html"
+    owner: www-data
+    group: www-data
+    mode: 0640
