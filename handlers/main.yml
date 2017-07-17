@@ -6,7 +6,7 @@
 
 - name: enable apache2 modules
   apache2_module:
-    name: {{ apache2_enable_module }}
+    name: "{{ apache2_enable_module }}"
     state: present
   with_items: "{{ apache2_enable_modules | default([]) }}"
   loop_control:
