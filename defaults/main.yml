@@ -1,0 +1,6 @@
+---
+apache2_enabled: yes
+
+apache2_enable_modules:
+  - rewrite
+  - ssl

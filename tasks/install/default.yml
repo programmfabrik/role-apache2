@@ -1,0 +1,17 @@
+---
+- name: install apache2
+  apt:
+    pkg: apache2
+    state: installed
+    update_cache: no
+
+- name: disable the apache2 default vhosts
+  file:
+    state: absent
+    path: "/etc/apache2/sites-enabled/{{ apache2_default_vhost }}"
+  with_items:
+    - 000-default.conf
+    - default-ssl.conf
+  loop_control:
+    loop_var: apache2_default_vhost
+  notify: restart apache2
