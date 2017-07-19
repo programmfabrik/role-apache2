@@ -17,3 +17,13 @@
     owner: www-data
     group: www-data
     mode: 0640
+
+- name: configure global webroot for multi-domain LetsEncrypt
+  when: apache2_enable_letsencrypt
+  copy:
+    src: etc/apache2/conf-enabled/letsencrypt.conf
+    dest: /etc/apache2/conf-enabled/letsencrypt.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload apache2
