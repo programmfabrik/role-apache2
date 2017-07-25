@@ -13,3 +13,5 @@ galaxy_info:
   galaxy_tags:
     - apache2
     - webserver
+
+dependencies: []
