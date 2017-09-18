@@ -1,4 +1,3 @@
----
 - name: disable the apache2 default vhosts
   file:
     state: absent
@@ -18,12 +17,33 @@
     group: www-data
     mode: 0640
 
+- name: disable configured modules
+  command: a2dismod {{ mod_item }}
+  with_items: '{{ apache2_disable_modules }}'
+  loop_control:
+    loop_var: mod_item
+  changed_when: no
+  notify: reload apache2
+
+- name: enable configured modules
+  command: a2enmod {{ mod_item }}
+  with_items: '{{ apache2_enable_modules }}'
+  loop_control:
+    loop_var: mod_item
+  changed_when: no
+  notify: reload apache2
+
 - name: configure global webroot for multi-domain LetsEncrypt
   when: apache2_enable_letsencrypt
   copy:
-    src: etc/apache2/conf-enabled/letsencrypt.conf
-    dest: /etc/apache2/conf-enabled/letsencrypt.conf
+    src: etc/apache2/conf-available/le.conf
+    dest: /etc/apache2/conf-available/le.conf
     owner: root
     group: root
     mode: 0644
   notify: reload apache2
+
+- name: enable global webroot for multi-domain LetsEncrypt
+  when: apache2_enable_letsencrypt
+  command: a2enconf le
+  changed_when: no
