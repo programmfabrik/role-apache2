@@ -4,7 +4,7 @@ help:
 	@echo "Available targets are:"
 	@echo "- install  - install all dependencies"
 	@echo "- molecule - run molecule tests"
-	@echo "- test     - run all tests"
+	@echo "- test     - wrapper for running all tests"
 	@echo "- clean    - clean up the workspace"
 
 install:
@@ -15,9 +15,10 @@ molecule:
 
 test: molecule
 
-all: install molecule
+all: install test
 
 clean:
+	molecule destroy --all
 	rm -rf molecule/*/.molecule
 	rm -rf molecule/*/tests/__pycache__
 	find . -name \*.pyc -delete
