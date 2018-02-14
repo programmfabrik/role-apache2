@@ -11,7 +11,7 @@ galaxy_info:
     versions:
     - Xenial
   galaxy_tags:
-    - apache2
-    - webserver
+  - apache2
+  - webserver
 
 dependencies: []

@@ -1,5 +1,5 @@
 ---
-- include: apache2.yml
+- include_tasks: apache2.yml
   when: apache2_enabled
   tags:
     - apache2
