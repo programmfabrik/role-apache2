@@ -1,13 +1,9 @@
 ---
 - name: reload apache2
-  service:
-    name: apache2
-    state: reloaded
+  command: apache2ctl configtest && systemctl reload apache2.service
 
 - name: restart apache2
-  service:
-    name: apache2
-    state: restarted
+  command: apache2ctl configtest && systemctl restart apache2.service
 
 - name: enable apache2 modules
   apache2_module:

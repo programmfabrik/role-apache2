@@ -1,29 +1,55 @@
-- name: disable the apache2 default vhosts
-  file:
-    state: absent
-    path: "/etc/apache2/sites-enabled/{{ apache2_default_vhost }}"
-  with_items:
-    - 000-default.conf
-    - default-ssl.conf
+- name: install apache2 packages listed in apache2_module_packages_installed
+  apt:
+    pkg: "{{ pkg_item }}"
+    state: installed
+    update_cache: no
+  with_items: '{{ apache2_module_packages_installed }}'
   loop_control:
-    loop_var: apache2_default_vhost
+    loop_var: pkg_item
   notify: restart apache2
 
-- name: template the default vhosts index page
+- name: uninstall apache2 packages listed in apache2_module_packages_removed
+  apt:
+    pkg: "{{ pkg_item }}"
+    state: absent
+    update_cache: no
+  with_items: '{{ apache2_module_packages_removed }}'
+  loop_control:
+    loop_var: pkg_item
+  notify: restart apache2
+
+- name: template the default vhosts
   template:
-    src: "var/www/html/index.html"
-    dest: "/var/www/html/index.html"
-    owner: www-data
-    group: www-data
-    mode: 0640
+    src: "{{ apache2_default_vhost_item }}.j2"
+    dest: "/{{ apache2_default_vhost_item }}"
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - "etc/apache2/sites-available/000-default.conf"
+    - "etc/apache2/sites-available/default-ssl.conf"
+  loop_control:
+    loop_var: apache2_default_vhost_item
+
+- name: ensure the 000-default.conf vhost is enabled
+  command: "a2ensite 000-default"
+  args:
+    creates: "/etc/apache2/sites-enabled/000-default.conf"
+  notify: restart apache2
+
+- name: ensure the default-ssl.conf vhost is enabled
+  command: "a2ensite default-ssl"
+  args:
+    creates: "/etc/apache2/sites-enabled/default-ssl.conf"
+  notify: restart apache2
 
 - name: disable configured modules
-  command: a2dismod {{ mod_item }}
+  command: a2dismod -f {{ mod_item }}
   with_items: '{{ apache2_disable_modules }}'
   loop_control:
     loop_var: mod_item
   changed_when: no
-  notify: reload apache2
+  notify: restart apache2
 
 - name: enable configured modules
   command: a2enmod {{ mod_item }}
@@ -31,7 +57,7 @@
   loop_control:
     loop_var: mod_item
   changed_when: no
-  notify: reload apache2
+  notify: restart apache2
 
 - name: configure global webroot for multi-domain LetsEncrypt
   when: apache2_enable_letsencrypt
@@ -41,9 +67,10 @@
     owner: root
     group: root
     mode: 0644
-  notify: reload apache2
+  notify: restart apache2
 
 - name: enable global webroot for multi-domain LetsEncrypt
   when: apache2_enable_letsencrypt
   command: a2enconf le
   changed_when: no
+  notify: restart apache2
