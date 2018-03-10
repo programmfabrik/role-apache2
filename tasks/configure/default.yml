@@ -42,9 +42,9 @@
   changed_when: no
 
 - name: disable apache2 vhosts
-  command: "a2dissite {{ apache2_enable_vhost }}"
+  command: "a2dissite {{ apache2_disable_vhost }}"
   args:
-    removes: "/etc/apache2/sites-enabled/{{ apache2_enable_vhost }}.conf"
+    removes: "/etc/apache2/sites-enabled/{{ apache2_disable_vhost }}.conf"
   notify: restart apache2
   with_items: '{{ apache2_disable_vhosts }}'
   loop_control:
