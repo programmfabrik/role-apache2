@@ -67,14 +67,6 @@
   changed_when: no
   notify: restart apache2
 
-- name: create the Vhosts webroot
-  file:
-    path: "{{ apache2_webbase }}/{{ apache2_webroot }}"
-    state: directory
-    owner: www-data
-    group: www-data
-    mode: 0750
-  notify: restart apache2
 
 - name: configure global webroot for multi-domain LetsEncrypt
   when: apache2_enable_letsencrypt
