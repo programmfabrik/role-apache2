@@ -4,12 +4,3 @@
 
 - name: restart apache2
   shell: apache2ctl configtest && systemctl restart apache2.service
-
-- name: enable apache2 modules
-  apache2_module:
-    name: "{{ apache2_enable_module }}"
-    state: present
-  with_items: "{{ apache2_enable_modules | default([]) }}"
-  loop_control:
-    loop_var: apache2_enable_module
-  notify: restart apache2

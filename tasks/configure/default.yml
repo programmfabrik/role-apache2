@@ -1,14 +1,14 @@
-- name: install apache2 packages listed in apache2_module_packages_installed
+- name: install custom packages related to apache2
   apt:
     pkg: "{{ pkg_item }}"
-    state: installed
+    state: present
     update_cache: no
   with_items: '{{ apache2_module_packages_installed }}'
   loop_control:
     loop_var: pkg_item
   notify: restart apache2
 
-- name: uninstall apache2 packages listed in apache2_module_packages_removed
+- name: uninstall custom packages related to apache2
   apt:
     pkg: "{{ pkg_item }}"
     state: absent
@@ -18,28 +18,21 @@
     loop_var: pkg_item
   notify: restart apache2
 
-- name: template the default vhosts
-  template:
-    src: "{{ apache2_default_vhost_item }}.j2"
-    dest: "/{{ apache2_default_vhost_item }}"
-    owner: root
-    group: root
-    mode: 0600
-  with_items:
-    - "etc/apache2/sites-available/000-default.conf"
-    - "etc/apache2/sites-available/default-ssl.conf"
+- name: disable apache2 modules
+  command: a2dismod -f {{ mod_item }}
+  with_items: '{{ apache2_disable_modules }}'
   loop_control:
-    loop_var: apache2_default_vhost_item
-
-- name: enable apache2 vhosts
-  command: "a2ensite {{ apache2_enable_vhost }}"
-  args:
-    creates: "/etc/apache2/sites-enabled/{{ apache2_enable_vhost }}.conf"
-  notify: restart apache2
-  with_items: '{{ apache2_enable_vhosts }}'
-  loop_control:
-    loop_var: apache2_enable_vhost
+    loop_var: mod_item
   changed_when: no
+  notify: restart apache2
+
+- name: enable apache2 modules
+  command: a2enmod {{ mod_item }}
+  with_items: '{{ apache2_enable_modules }}'
+  loop_control:
+    loop_var: mod_item
+  changed_when: no
+  notify: restart apache2
 
 - name: disable apache2 vhosts
   command: "a2dissite {{ apache2_disable_vhost }}"
@@ -50,36 +43,3 @@
   loop_control:
     loop_var: apache2_disable_vhost
   changed_when: no
-
-- name: disable configured modules
-  command: a2dismod -f {{ mod_item }}
-  with_items: '{{ apache2_disable_modules }}'
-  loop_control:
-    loop_var: mod_item
-  changed_when: no
-  notify: restart apache2
-
-- name: enable configured modules
-  command: a2enmod {{ mod_item }}
-  with_items: '{{ apache2_enable_modules }}'
-  loop_control:
-    loop_var: mod_item
-  changed_when: no
-  notify: restart apache2
-
-
-- name: configure global webroot for multi-domain LetsEncrypt
-  when: apache2_enable_letsencrypt
-  copy:
-    src: etc/apache2/conf-available/le.conf
-    dest: /etc/apache2/conf-available/le.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify: restart apache2
-
-- name: enable global webroot for multi-domain LetsEncrypt
-  when: apache2_enable_letsencrypt
-  command: a2enconf le
-  changed_when: no
-  notify: restart apache2

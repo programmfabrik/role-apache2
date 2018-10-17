@@ -1,5 +1,6 @@
 ---
-apache2_enabled: no
+apache2_module_packages_removed: []
+apache2_module_packages_installed: []
 apache2_disable_modules: []
 apache2_enable_modules: []
-apache2_enable_letsencrypt: no
+apache2_disable_vhosts: []

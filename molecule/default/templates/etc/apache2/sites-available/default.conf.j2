@@ -3,5 +3,5 @@
         DirectoryIndex index.html
         # ServerName has to be set to something, otherwise the ServerName of 000-default will default to $(hostname -f) and it will match for it!
         ServerName default.local
-        RedirectMatch permanent ^/(.*) {{ apache_default_vhost_redirect_destination }}
+        RedirectMatch permanent ^/(.*) https://www.blunix.com
 </VirtualHost>
