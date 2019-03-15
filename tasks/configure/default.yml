@@ -1,36 +1,36 @@
-- name: install custom packages related to apache2
+it- name: install custom packages related to apache2
   apt:
-    pkg: "{{ apache2_custom_pkg_item_install }}"
+    pkg: "{{ apache2_custom_pkg_install }}"
     state: present
     update_cache: no
   with_items: '{{ apache2_module_packages_installed }}'
   loop_control:
-    loop_var: apache2_custom_pkg_item_install
+    loop_var: apache2_custom_pkg_install
   notify: restart apache2
 
 - name: uninstall custom packages related to apache2
   apt:
-    pkg: "{{ apache2_custom_pkg_item_uninstall }}"
+    pkg: "{{ apache2_custom_pkg_uninstall }}"
     state: absent
     update_cache: no
   with_items: '{{ apache2_module_packages_removed }}'
   loop_control:
-    loop_var: apache2_custom_pkg_item_uninstall
+    loop_var: apache2_custom_pkg_uninstall
   notify: restart apache2
 
 - name: disable apache2 modules
-  command: a2dismod -f {{ apache2_mod_item_disable }}
+  command: a2dismod -f {{ apache2_mod_disable }}
   with_items: '{{ apache2_disable_modules }}'
   loop_control:
-    loop_var: apache2_mod_item_disable
+    loop_var: apache2_mod_disable
   changed_when: no
   notify: restart apache2
 
 - name: enable apache2 modules
-  command: a2enmod {{ apache2_mod_item_enable }}
+  command: a2enmod {{ apache2_mod_enable }}
   with_items: '{{ apache2_enable_modules }}'
   loop_control:
-    loop_var: apache2_mod_item_enable
+    loop_var: apache2_mod_enable
   changed_when: no
   notify: restart apache2
 
