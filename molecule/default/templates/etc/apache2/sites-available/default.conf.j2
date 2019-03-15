@@ -1,0 +1,7 @@
+<VirtualHost *:80>
+        DocumentRoot /var/www/html/
+        DirectoryIndex index.html
+        # ServerName has to be set to something, otherwise the ServerName of 000-default will default to $(hostname -f) and it will match for it!
+        ServerName default.local
+        RedirectMatch permanent ^/(.*) https://www.ansible.com
+</VirtualHost>

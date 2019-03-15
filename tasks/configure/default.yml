@@ -1,49 +1,45 @@
-- name: disable the apache2 default vhosts
-  file:
-    state: absent
-    path: "/etc/apache2/sites-enabled/{{ apache2_default_vhost }}"
-  with_items:
-    - 000-default.conf
-    - default-ssl.conf
+it- name: install custom packages related to apache2
+  apt:
+    pkg: "{{ apache2_custom_pkg_install }}"
+    state: present
+    update_cache: no
+  with_items: '{{ apache2_module_packages_installed }}'
   loop_control:
-    loop_var: apache2_default_vhost
+    loop_var: apache2_custom_pkg_install
   notify: restart apache2
 
-- name: template the default vhosts index page
-  template:
-    src: "var/www/html/index.html"
-    dest: "/var/www/html/index.html"
-    owner: www-data
-    group: www-data
-    mode: 0640
+- name: uninstall custom packages related to apache2
+  apt:
+    pkg: "{{ apache2_custom_pkg_uninstall }}"
+    state: absent
+    update_cache: no
+  with_items: '{{ apache2_module_packages_removed }}'
+  loop_control:
+    loop_var: apache2_custom_pkg_uninstall
+  notify: restart apache2
 
-- name: disable configured modules
-  command: a2dismod {{ mod_item }}
+- name: disable apache2 modules
+  command: a2dismod -f {{ apache2_mod_disable }}
   with_items: '{{ apache2_disable_modules }}'
   loop_control:
-    loop_var: mod_item
+    loop_var: apache2_mod_disable
   changed_when: no
-  notify: reload apache2
+  notify: restart apache2
 
-- name: enable configured modules
-  command: a2enmod {{ mod_item }}
+- name: enable apache2 modules
+  command: a2enmod {{ apache2_mod_enable }}
   with_items: '{{ apache2_enable_modules }}'
   loop_control:
-    loop_var: mod_item
+    loop_var: apache2_mod_enable
   changed_when: no
-  notify: reload apache2
+  notify: restart apache2
 
-- name: configure global webroot for multi-domain LetsEncrypt
-  when: apache2_enable_letsencrypt
-  copy:
-    src: etc/apache2/conf-available/le.conf
-    dest: /etc/apache2/conf-available/le.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify: reload apache2
-
-- name: enable global webroot for multi-domain LetsEncrypt
-  when: apache2_enable_letsencrypt
-  command: a2enconf le
+- name: disable apache2 vhosts
+  command: "a2dissite {{ apache2_disable_vhost }}"
+  args:
+    removes: "/etc/apache2/sites-enabled/{{ apache2_disable_vhost }}.conf"
+  notify: restart apache2
+  with_items: '{{ apache2_disable_vhosts }}'
+  loop_control:
+    loop_var: apache2_disable_vhost
   changed_when: no

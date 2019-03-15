@@ -2,5 +2,5 @@
 - name: install apache2
   apt:
     pkg: apache2
-    state: installed
+    state: present
     update_cache: no

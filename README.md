@@ -1,20 +1,12 @@
 # Ansible Role apache2
 
-This role installs and configures apache2, a commonly known webserver.
+This role installs the webserver apache2.
 
+This role can only disable vhosts (like the vhosts present by default after installation). It can not create or manage vhosts. This has to be done in custom post_tasks.
 
 # Example play
 
-```yaml
-- hosts: dm.public-debian.vagrant
-  vars:
-    apache2_enabled: yes
-    apache2_enable_modules:
-      - rewrite
-      - ssl
-  roles:
-    - blunix.role-apache2
-```
+For an example play please refer to `molecule/default/playbook.yml`.
 
 # License
 

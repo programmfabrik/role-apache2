@@ -10,5 +10,31 @@
 
 - name: Converge
   hosts: all
+  become: yes
+  vars:
+    apache2_module_packages_removed:
+      - libapache2-mod-nss
+    apache2_module_packages_installed:
+      - libapache2-modsecurity
+    apache2_disable_modules:
+      - auth_basic
+    apache2_enable_modules:
+      - security2
+    apache2_disable_vhosts:
+      - 000-default
+
   roles:
     - role: role-apache2
+
+  post_tasks:
+    - name: template a new default vhost
+      template:
+        src: templates/etc/apache2/sites-available/default.conf.j2
+        dest: /etc/apache2/sites-available/default.conf
+        owner: root
+        group: root
+        mode: 0640
+
+    - name: enable the default vhost
+      shell: a2ensite default
+      notify: restart apache2
