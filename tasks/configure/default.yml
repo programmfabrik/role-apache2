@@ -1,4 +1,4 @@
-it- name: install custom packages related to apache2
+- name: install custom packages related to apache2
   apt:
     pkg: "{{ apache2_custom_pkg_install }}"
     state: present
