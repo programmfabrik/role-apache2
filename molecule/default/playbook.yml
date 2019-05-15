@@ -23,7 +23,7 @@
     apache2_enable_modules:
       - security2
     # Path of htusers file to create
-    apache2_htpasswd_file: /etc/apache2/htpasswd
+    apache2_htpasswd_file: /etc/apache2/htpasswd/default
     # Htpasswd users to remove
     apache2_htpasswd_absent:
       - peter

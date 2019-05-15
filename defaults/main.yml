@@ -7,6 +7,6 @@ apache2_vhosts_absent: []
 apache2_includes:
   - ssl
   - gzip
-apache2_htpasswd_file: /etc/apache2/htpasswd
+apache2_htpasswd_file: /etc/apache2/htpasswd/default
 apache2_htpasswd_present: []
 apache2_htpasswd_absent: []

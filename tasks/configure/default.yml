@@ -4,8 +4,8 @@
     state: present
     update_cache: no
   notify:
-    - restart apache2
     - verify apache2 config
+    - restart apache2
 
 - name: uninstall custom packages related to apache2
   apt:
@@ -13,8 +13,8 @@
     state: absent
     update_cache: no
   notify:
-    - restart apache2
     - verify apache2 config
+    - restart apache2
 
 - name: disable apache2 modules
   command: a2dismod -f {{ apache2_mod_disable }}
@@ -23,8 +23,8 @@
     loop_var: apache2_mod_disable
   changed_when: no
   notify:
-    - restart apache2
     - verify apache2 config
+    - restart apache2
 
 - name: enable apache2 modules
   command: a2enmod {{ apache2_mod_enable }}
@@ -33,10 +33,24 @@
     loop_var: apache2_mod_enable
   changed_when: no
   notify:
-    - restart apache2
     - verify apache2 config
+    - restart apache2
 
+- name: template /etc/apache2/apache2.conf
+  template:
+    src: templates/etc/apache2/apache2.conf.j2
+    dest: /etc/apache2/apache2.conf
+    owner: root
+    group: root
+    mode: 0640
 
+- name: create directory /etc/apache2/htpasswd
+  file:
+    state: directory
+    name: /etc/apache2/htpasswd
+    owner: root
+    group: www-data
+    mode: 0750
 
 - name: create directory /etc/apache2/includes/
   file:
