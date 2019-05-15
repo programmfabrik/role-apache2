@@ -1,6 +1,9 @@
 ---
 - name: reload apache2
-  shell: apache2ctl configtest && systemctl reload apache2.service
+  shell: systemctl reload apache2.service
 
 - name: restart apache2
-  shell: apache2ctl configtest && systemctl restart apache2.service
+  shell: systemctl restart apache2.service
+
+- name: verify apache2 config
+  shell: apache2ctl configtest
