@@ -1,22 +1,20 @@
 - name: install custom packages related to apache2
   apt:
-    pkg: "{{ apache2_custom_pkg_install }}"
+    pkg: "{{ apache2_module_packages_installed }}"
     state: present
     update_cache: no
-  with_items: '{{ apache2_module_packages_installed }}'
-  loop_control:
-    loop_var: apache2_custom_pkg_install
-  notify: restart apache2
+  notify:
+    - restart apache2
+    - verify apache2 config
 
 - name: uninstall custom packages related to apache2
   apt:
-    pkg: "{{ apache2_custom_pkg_uninstall }}"
+    pkg: "{{ apache2_module_packages_removed }}"
     state: absent
     update_cache: no
-  with_items: '{{ apache2_module_packages_removed }}'
-  loop_control:
-    loop_var: apache2_custom_pkg_uninstall
-  notify: restart apache2
+  notify:
+    - restart apache2
+    - verify apache2 config
 
 - name: disable apache2 modules
   command: a2dismod -f {{ apache2_mod_disable }}
@@ -24,7 +22,9 @@
   loop_control:
     loop_var: apache2_mod_disable
   changed_when: no
-  notify: restart apache2
+  notify:
+    - restart apache2
+    - verify apache2 config
 
 - name: enable apache2 modules
   command: a2enmod {{ apache2_mod_enable }}
@@ -32,14 +32,99 @@
   loop_control:
     loop_var: apache2_mod_enable
   changed_when: no
-  notify: restart apache2
+  notify:
+    - restart apache2
+    - verify apache2 config
 
-- name: disable apache2 vhosts
-  command: "a2dissite {{ apache2_disable_vhost }}"
-  args:
-    removes: "/etc/apache2/sites-enabled/{{ apache2_disable_vhost }}.conf"
-  notify: restart apache2
-  with_items: '{{ apache2_disable_vhosts }}'
+
+
+- name: create directory /etc/apache2/includes/
+  file:
+    state: directory
+    name: /etc/apache2/includes
+    owner: root
+    group: root
+    mode: 0750
+
+- name: setup include files for vhosts in /etc/apache2/includes/
+  template:
+    src: "templates/etc/apache2/includes/{{ apache2_include_item }}.conf.j2"
+    dest: "/etc/apache2/includes/{{ apache2_include_item }}.conf"
+    owner: root
+    group: root
+    mode: 0640
+  with_items: "{{ apache2_includes }}"
   loop_control:
-    loop_var: apache2_disable_vhost
-  changed_when: no
+    loop_var: apache2_include_item
+
+- name: ensure all htpasswds configured as present
+  htpasswd:
+    path: "{{ apache2_htpasswd_file }}"
+    name: "{{ htpasswd_present_item.name }}"
+    password: "{{ htpasswd_present_item.pass }}"
+    owner: root
+    group: www-data
+    mode: 0640
+  with_items: "{{ apache2_htpasswd_present }}"
+  loop_control:
+    loop_var: htpasswd_present_item
+
+- name: remove all htpasswd users configured as absent
+  htpasswd:
+    path: "{{ apache2_htpasswd_file }}"
+    name: "{{ htpasswd_absent_item }}"
+    state: absent
+  with_items: "{{ apache2_htpasswd_absent }}"
+  loop_control:
+    loop_var: htpasswd_absent_item
+
+- name: remove apache2_vhosts_absent from /etc/apache2/sites-enabled
+  file:
+    path: /etc/apache2/sites-enabled/{{ absent_vhost_item }}
+    state: absent
+  with_items: '{{ apache2_vhosts_absent }}'
+  loop_control:
+    loop_var: absent_vhost_item
+  notify:
+    - verify apache2 config
+    - reload apache2
+
+- name: remove apache2_vhosts_absent from /etc/apache2/sites-available
+  file:
+    path: /etc/apache2/sites-available/{{ absent_vhost_item }}
+    state: absent
+  with_items: '{{ apache2_vhosts_absent }}'
+  loop_control:
+    loop_var: absent_vhost_item
+  notify:
+    - verify apache2 config
+    - reload apache2
+
+- name: setup apache2 vhosts
+  template:
+    src: "{{ present_vhost_item['template'] }}"
+    dest: "/etc/apache2/sites-available/{{ present_vhost_item['name'] }}.conf"
+    owner: root
+    group: root
+    mode: 0640
+  with_items: '{{ apache2_vhosts_present }}'
+  loop_control:
+    loop_var: present_vhost_item
+  notify:
+    - verify apache2 config
+    - reload apache2
+
+- name: enable apache2 vhosts
+  file:
+    state: link
+    src: "/etc/apache2/sites-available/{{ present_vhost_item['name'] }}.conf"
+    dest: "/etc/apache2/sites-enabled/{{ present_vhost_item['name'] }}.conf"
+    owner: root
+    group: root
+    mode: 0640
+  with_items: '{{ apache2_vhosts_present }}'
+  loop_control:
+    loop_var: present_vhost_item
+  notify:
+    - verify apache2 config
+    - reload apache2

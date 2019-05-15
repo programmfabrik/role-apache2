@@ -1,6 +1,8 @@
 ---
 - name: install apache2
   apt:
-    pkg: apache2
+    pkg:
+      - apache2
+      - python-passlib
     state: present
     update_cache: no

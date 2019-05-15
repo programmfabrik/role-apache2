@@ -11,6 +11,8 @@
 - name: Converge
   hosts: all
   become: yes
+  roles:
+    - role: role-apache2
   vars:
     apache2_module_packages_removed:
       - libapache2-mod-nss
@@ -20,21 +22,18 @@
       - auth_basic
     apache2_enable_modules:
       - security2
-    apache2_disable_vhosts:
+    # Path of htusers file to create
+    apache2_htpasswd_file: /etc/apache2/htpasswd
+    # Htpasswd users to remove
+    apache2_htpasswd_absent:
+      - peter
+      - john
+    # Htpasswd users to create
+    apache2_htpasswd_present:
+      - name: steve
+        pass: secret
+    apache2_vhosts_absent:
       - 000-default
-
-  roles:
-    - role: role-apache2
-
-  post_tasks:
-    - name: template a new default vhost
-      template:
-        src: templates/etc/apache2/sites-available/default.conf.j2
-        dest: /etc/apache2/sites-available/default.conf
-        owner: root
-        group: root
-        mode: 0640
-
-    - name: enable the default vhost
-      shell: a2ensite default
-      notify: restart apache2
+    apache2_vhosts_present:
+      - template: templates/etc/apache2/sites-available/000-default.conf.j2
+        name: 000-default
