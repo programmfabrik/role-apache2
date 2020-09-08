@@ -103,17 +103,6 @@
     - verify apache2 config
     - reload apache2
 
-- name: remove apache2_vhosts_absent from /etc/apache2/sites-available
-  file:
-    path: /etc/apache2/sites-available/{{ absent_vhost_item }}
-    state: absent
-  with_items: '{{ apache2_vhosts_absent }}'
-  loop_control:
-    loop_var: absent_vhost_item
-  notify:
-    - verify apache2 config
-    - reload apache2
-
 - name: setup apache2 vhosts
   template:
     src: "{{ present_vhost_item['template'] }}"
