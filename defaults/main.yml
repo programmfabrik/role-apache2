@@ -3,7 +3,10 @@ apache2_module_packages_removed: []
 apache2_module_packages_installed: []
 apache2_disable_modules: []
 apache2_enable_modules: []
-apache2_vhosts_absent: []
+apache2_vhosts_present: []
+apache2_vhosts_absent:
+  - 000-default.conf
+  - default-ssl.conf
 apache2_includes:
   - ssl
   - gzip
